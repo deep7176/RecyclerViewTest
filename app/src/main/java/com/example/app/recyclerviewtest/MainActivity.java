@@ -7,22 +7,20 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
-import com.example.app.recyclerviewtest.model.Child;
-import com.example.app.recyclerviewtest.model.Group;
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.LineNumberInputStream;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,
-        DialogFragment.EventListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, DialogFragment.EventListener {
+    private static final String TAG = "MainActivity";
 
     private static final String FRAGMENT_TAG_ITEM_PINNED_DIALOG = "Pinned Dialog";
+    private static final String FRAGMENT_LIST_VIEW = "ListViewFragment";
     private FloatingActionButton mFAB;
 
     private DataProvider mProvider;
@@ -34,10 +32,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mProvider = new DataProvider();
         mFAB = (FloatingActionButton) findViewById(R.id.fab);
         mFAB.setOnClickListener(this);
 
-        mProvider = new DataProvider();
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new MainActivityFragment(), FRAGMENT_LIST_VIEW)
+                    .commit();
+        }
+
 
     }
 
@@ -109,8 +113,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onGroupItemClicked(int groupPosition) {
-        final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment);
-        Group data = getDataProvider().getGroupItem(groupPosition);
+        final Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_VIEW);
+        DataProvider.GroupData data = getDataProvider().getGroupItem(groupPosition);
 
         if (data.isPinned()) {
             // unpin if tapped the pinned item
@@ -120,8 +124,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void onChildItemClicked(int groupPosition, int childPosition) {
-        final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment);
-        Child data = getDataProvider().getGroupItem(groupPosition).getChildren().get(childPosition);
+        final Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_VIEW);
+        DataProvider.ChildData data = getDataProvider().getChildItem(groupPosition, childPosition);
 
         if (data.isPinned()) {
             // unpin if tapped the pinned item
@@ -131,8 +135,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onItemUndoActionClicked() {
-        final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment);
+        final Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_VIEW);
         final long result = getDataProvider().undoLastRemoval();
+        Log.d(TAG, "undoLastRemoval() returned: " + result);
 
         if (result == RecyclerViewExpandableItemManager.NO_EXPANDABLE_POSITION) {
             return;
@@ -183,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onNotifyExpandableItemPinnedDialogDismissed(
             int groupPosition, int childPosition, boolean ok) {
 
-        final Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment);
+        final Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_VIEW);
 
         if (childPosition == RecyclerView.NO_POSITION) {
             // group item
@@ -197,9 +202,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public DataProvider getDataProvider() {
-        if (mProvider == null) {
-            return mProvider = new DataProvider();
-        }
 
         return mProvider;
     }

@@ -15,6 +15,7 @@
         android:paddingEnd="10dp"
         android:paddingStart="10dp"
         android:scrollbarStyle="outsideOverlay"
-        android:scrollbars="vertical" />
+        android:scrollbars="vertical"
+        tools:listitem="@layout/list_group_item_draggable"/>
 
 </RelativeLayout>

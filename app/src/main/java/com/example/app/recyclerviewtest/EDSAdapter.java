@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.example.app.recyclerviewtest.model.Child;
-import com.example.app.recyclerviewtest.model.Group;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
 import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableDraggableItemAdapter;
@@ -60,8 +58,8 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         void onItemViewClicked(View v, boolean pinned);
     }
 
-    public static abstract class BaseViewHolder extends
-            AbstractDraggableSwipeableItemViewHolder implements ExpandableItemViewHolder {
+    public static abstract class BaseViewHolder extends AbstractDraggableSwipeableItemViewHolder
+            implements ExpandableItemViewHolder {
 
         public FrameLayout mContainer;
         public View mDragHandle;
@@ -186,13 +184,13 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     @Override
     public void onBindGroupViewHolder(GroupVH holder, int groupPosition, int viewType) {
         // group item
-        final Group item = mProvider.getGroupItem(groupPosition);
+        final DataProvider.GroupData item = mProvider.getGroupItem(groupPosition);
 
         // set listeners
         holder.itemView.setOnClickListener(mItemViewOnClickListener);
 
         // set text
-        holder.mTextView.setText(item.getValue());
+        holder.mTextView.setText(item.getText());
 
         // set background resource (target view ID: container)
         final int dragState = holder.getDragStateFlags();
@@ -223,11 +221,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
                 bgResId = R.drawable.bg_group_item_normal_state;
             }
 
-            if ((expandState & Expandable.STATE_FLAG_IS_EXPANDED) != 0) {
-                isExpanded = true;
-            } else {
-                isExpanded = false;
-            }
+            isExpanded = (expandState & Expandable.STATE_FLAG_IS_EXPANDED) != 0;
 
             holder.mContainer.setBackgroundResource(bgResId);
             holder.mIndicator.setExpandedState(isExpanded, animateIndicator);
@@ -241,7 +235,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     @Override
     public void onBindChildViewHolder(ChildVH holder, int groupPosition, int childPosition, int viewType) {
         // child item
-        final Child item = mProvider.getChildItem(groupPosition, childPosition);
+        final DataProvider.ChildData item = mProvider.getChildItem(groupPosition, childPosition);
 
         // set listeners
         // (if the item is *not pinned*, click event comes to the itemView)
@@ -250,7 +244,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         holder.mContainer.setOnClickListener(mSwipeableViewContainerOnClickListener);
 
         // set text
-        holder.mTextView.setText(item.getValue());
+        holder.mTextView.setText(item.getText());
 
         final int dragState = holder.getDragStateFlags();
         final int swipeState = holder.getSwipeStateFlags();
@@ -482,7 +476,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         protected void onPerformAction() {
             super.onPerformAction();
 
-            Group item = mAdapter.mProvider.getGroupItem(mGroupPosition);
+            DataProvider.GroupData item = mAdapter.mProvider.getGroupItem(mGroupPosition);
 
             if (!item.isPinned()) {
                 item.setPinned(true);
@@ -555,7 +549,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         protected void onPerformAction() {
             super.onPerformAction();
 
-            Group item = mAdapter.mProvider.getGroupItem(mGroupPosition);
+            DataProvider.GroupData item = mAdapter.mProvider.getGroupItem(mGroupPosition);
             if (item.isPinned()) {
                 item.setPinned(false);
                 mAdapter.mExpandableItemManager.notifyGroupItemChanged(mGroupPosition);
@@ -586,7 +580,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         protected void onPerformAction() {
             super.onPerformAction();
 
-            Child item = mAdapter.mProvider.getChildItem(mGroupPosition, mChildPosition);
+            DataProvider.ChildData item = mAdapter.mProvider.getChildItem(mGroupPosition, mChildPosition);
 
             if (!item.isPinned()) {
                 item.setPinned(true);
@@ -663,7 +657,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         protected void onPerformAction() {
             super.onPerformAction();
 
-            Child item = mAdapter.mProvider.getChildItem(mGroupPosition, mChildPosition);
+            DataProvider.ChildData item = mAdapter.mProvider.getChildItem(mGroupPosition, mChildPosition);
             if (item.isPinned()) {
                 item.setPinned(false);
                 mAdapter.mExpandableItemManager.notifyChildItemChanged(mGroupPosition, mChildPosition);

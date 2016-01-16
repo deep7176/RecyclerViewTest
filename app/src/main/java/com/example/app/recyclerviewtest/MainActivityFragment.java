@@ -93,7 +93,6 @@ public class MainActivityFragment extends Fragment implements
         // Also need to disable them when using animation indicator.
         animator.setSupportsChangeAnimations(false);
 
-
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mWrappedAdapter);  // requires *wrapped* adapter
         mRecyclerView.setItemAnimator(animator);

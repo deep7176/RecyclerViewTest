@@ -3,9 +3,5 @@
     <item>
         <color android:color="@color/bg_swipe_group_item_pinned"/>
     </item>
-    <item android:right="16dp">
-        <bitmap
-            android:src="@drawable/ic_schedule_24dp"
-            android:gravity="right|center_vertical"/>
-    </item>
+
 </layer-list>
