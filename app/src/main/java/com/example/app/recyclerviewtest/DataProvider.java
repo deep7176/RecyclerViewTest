@@ -27,10 +27,13 @@ public class DataProvider {
     private int mLastRemovedChildPosition = -1;
 
     public DataProvider() {
+        mData = new LinkedList<>();
+        getDummy();
+    }
+
+    private void getDummy() {
         final String groupItems = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         final String childItems = "abc";
-
-        mData = new LinkedList<>();
 
         for (int i = 0; i < groupItems.length(); i++) {
             //noinspection UnnecessaryLocalVariable
@@ -59,8 +62,6 @@ public class DataProvider {
     }
 
     public GroupData getGroupItem(int groupPosition) {
-        Log.d(TAG, "getGroupItem() called with: " + "groupPosition = [" + groupPosition + "]");
-
         if (groupPosition < 0 || groupPosition >= getGroupCount()) {
             throw new IndexOutOfBoundsException("groupPosition = " + groupPosition);
         }
@@ -69,8 +70,6 @@ public class DataProvider {
     }
 
     public ChildData getChildItem(int groupPosition, int childPosition) {
-        Log.d(TAG, "getChildItem() called with: " + "groupPosition = [" + groupPosition + "], childPosition = [" + childPosition + "]");
-
         if (groupPosition < 0 || groupPosition >= getGroupCount()) {
             throw new IndexOutOfBoundsException("groupPosition = " + groupPosition);
         }
@@ -113,8 +112,6 @@ public class DataProvider {
     }
 
     public void removeGroupItem(int groupPosition) {
-        Log.d(TAG, "removeGroupItem() called with: " + "groupPosition = [" + groupPosition + "]");
-
         mLastRemovedGroup = mData.remove(groupPosition);
         mLastRemovedGroupPosition = groupPosition;
 
@@ -124,8 +121,6 @@ public class DataProvider {
     }
 
     public void removeChildItem(int groupPosition, int childPosition) {
-        Log.d(TAG, "removeChildItem() called with: " + "groupPosition = [" + groupPosition + "], childPosition = [" + childPosition + "]");
-
         mLastRemovedChild = mData.get(groupPosition).second.remove(childPosition);
         mLastRemovedChildParentGroupId = mData.get(groupPosition).first.getGroupId();
         mLastRemovedChildPosition = childPosition;

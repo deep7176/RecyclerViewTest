@@ -16,7 +16,8 @@ import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandab
 
 import java.io.LineNumberInputStream;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, DialogFragment.EventListener {
+public class MainActivity extends AppCompatActivity implements
+        View.OnClickListener, DialogFragment.EventListener {
     private static final String TAG = "MainActivity";
 
     private static final String FRAGMENT_TAG_ITEM_PINNED_DIALOG = "Pinned Dialog";
@@ -137,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void onItemUndoActionClicked() {
         final Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_VIEW);
         final long result = getDataProvider().undoLastRemoval();
-        Log.d(TAG, "undoLastRemoval() returned: " + result);
 
         if (result == RecyclerViewExpandableItemManager.NO_EXPANDABLE_POSITION) {
             return;
@@ -202,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public DataProvider getDataProvider() {
-
         return mProvider;
     }
 }

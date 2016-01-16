@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.example.app.recyclerviewtest;
+package com.example.app.recyclerviewtest.view;
 
 import android.content.Context;
 import android.os.Build;

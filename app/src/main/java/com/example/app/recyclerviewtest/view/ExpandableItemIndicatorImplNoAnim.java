@@ -14,13 +14,15 @@
  *    limitations under the License.
  */
 
-package com.example.app.recyclerviewtest;
+package com.example.app.recyclerviewtest.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.example.app.recyclerviewtest.R;
 
 class ExpandableItemIndicatorImplNoAnim extends ExpandableItemIndicator.Impl {
     private ImageView mImageView;

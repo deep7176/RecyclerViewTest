@@ -1,4 +1,4 @@
-package com.example.app.recyclerviewtest;
+package com.example.app.recyclerviewtest.util;
 
 import android.support.v4.view.ViewCompat;
 import android.view.View;

@@ -32,7 +32,7 @@
             android:layout_marginRight="40dp"
             android:gravity="center"/>
 
-        <com.example.app.recyclerviewtest.ExpandableItemIndicator
+        <com.example.app.recyclerviewtest.view.ExpandableItemIndicator
             android:id="@+id/indicator"
             android:layout_width="24dp"
             android:layout_height="24dp"
