@@ -2,10 +2,11 @@ package com.example.app.recyclerviewtest.ui;
 
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,8 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.app.recyclerviewtest.adapter.EDSAdapter;
 import com.example.app.recyclerviewtest.R;
+import com.example.app.recyclerviewtest.adapter.EDSAdapter;
 import com.example.app.recyclerviewtest.provider.DataProvider;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator;
@@ -37,12 +38,13 @@ public class MainActivityFragment extends Fragment implements
 
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
-    private RecyclerView.Adapter mAdapter;
+    private EDSAdapter mAdapter;
     private RecyclerView.Adapter mWrappedAdapter;
     private RecyclerViewExpandableItemManager mRecyclerViewExpandableItemManager;
     private RecyclerViewDragDropManager mRecyclerViewDragDropManager;
     private RecyclerViewSwipeManager mRecyclerViewSwipeManager;
     private RecyclerViewTouchActionGuardManager mRecyclerViewTouchActionGuardManager;
+    private FloatingActionButton mFab;
 
     public MainActivityFragment() {
         super();
@@ -85,6 +87,14 @@ public class MainActivityFragment extends Fragment implements
         myItemAdapter.setEventListener(this);
         mAdapter = myItemAdapter;
 
+        mFab = getFab();
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAdapter.addGroupItem();
+            }
+        });
+
         mWrappedAdapter = mRecyclerViewExpandableItemManager.createWrappedAdapter(myItemAdapter);       // wrap for expanding
         mWrappedAdapter = mRecyclerViewDragDropManager.createWrappedAdapter(mWrappedAdapter);           // wrap for dragging
         mWrappedAdapter = mRecyclerViewSwipeManager.createWrappedAdapter(mWrappedAdapter);      // wrap for swiping
@@ -121,6 +131,10 @@ public class MainActivityFragment extends Fragment implements
         mRecyclerViewSwipeManager.attachRecyclerView(mRecyclerView);
         mRecyclerViewDragDropManager.attachRecyclerView(mRecyclerView);
         mRecyclerViewExpandableItemManager.attachRecyclerView(mRecyclerView);
+    }
+
+    private FloatingActionButton getFab() {
+        return ((MainActivity)getActivity()).getFab();
     }
 
     @Override

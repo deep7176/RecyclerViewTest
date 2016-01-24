@@ -1,7 +1,6 @@
 package com.example.app.recyclerviewtest.provider;
 
 import android.support.v4.util.Pair;
-import android.util.Log;
 
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager;
 
@@ -15,100 +14,31 @@ import java.util.List;
  */
 public class DataProvider {
     private static final String TAG = "DataProvider";
-    private List<Pair<GroupData, List<ChildData>>> mData;
+    private static String GROUP_ITEM_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static String CHILD_ITEM_CHARS = "abcdefghijklmnopqrstuvwxyz";
+
+    private List<GroupSet> mData;
+    private IdGenerator mGroupIdGenerator;
 
     // for undo group item
-    private Pair<GroupData, List<ChildData>> mLastRemovedGroup;
+    private GroupSet mLastRemovedGroup;
     private int mLastRemovedGroupPosition = -1;
 
     // for undo child item
-    private ChildData mLastRemovedChild;
+    private ConcreteChildData mLastRemovedChild;
     private long mLastRemovedChildParentGroupId = -1;
     private int mLastRemovedChildPosition = -1;
 
     public DataProvider() {
         mData = new LinkedList<>();
-        getDummy();
-    }
+        mGroupIdGenerator = new IdGenerator();
 
-    private void getDummy() {
-        final String groupItems = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final String childItems = "abc";
-
-        for (int i = 0; i < groupItems.length(); i++) {
-            //noinspection UnnecessaryLocalVariable
-            final long groupId = i;
-            final String groupText = Character.toString(groupItems.charAt(i));
-            final ConcreteGroupData group = new ConcreteGroupData(groupId, groupText);
-            final List<ChildData> children = new ArrayList<>();
-
-            for (int j = 0; j < childItems.length(); j++) {
-                final long childId = group.generateNewChildId();
-                final String childText = Character.toString(childItems.charAt(j));
-
-                children.add(new ConcreteChildData(childId, childText));
+        for (int i = 0; i < 1; i++) {
+            addGroupItem(i);
+            for (int j = 0; j < 3; j++) {
+                addChildItem(i, j);
             }
-
-            mData.add(new Pair<GroupData, List<ChildData>>(group, children));
         }
-    }
-
-    public int getGroupCount() {
-        return mData.size();
-    }
-
-    public int getChildCount(int groupPosition) {
-        return mData.get(groupPosition).second.size();
-    }
-
-    public GroupData getGroupItem(int groupPosition) {
-        if (groupPosition < 0 || groupPosition >= getGroupCount()) {
-            throw new IndexOutOfBoundsException("groupPosition = " + groupPosition);
-        }
-
-        return mData.get(groupPosition).first;
-    }
-
-    public ChildData getChildItem(int groupPosition, int childPosition) {
-        if (groupPosition < 0 || groupPosition >= getGroupCount()) {
-            throw new IndexOutOfBoundsException("groupPosition = " + groupPosition);
-        }
-
-        final List<ChildData> children = mData.get(groupPosition).second;
-
-        if (childPosition < 0 || childPosition >= children.size()) {
-            throw new IndexOutOfBoundsException("childPosition = " + childPosition);
-        }
-
-        return children.get(childPosition);
-    }
-
-    public void moveGroupItem(int fromGroupPosition, int toGroupPosition) {
-        if (fromGroupPosition == toGroupPosition) {
-            return;
-        }
-
-        final Pair<GroupData, List<ChildData>> item = mData.remove(fromGroupPosition);
-        mData.add(toGroupPosition, item);
-    }
-
-    public void moveChildItem(int fromGroupPosition, int fromChildPosition, int toGroupPosition, int toChildPosition) {
-        if ((fromGroupPosition == toGroupPosition) && (fromChildPosition == toChildPosition)) {
-            return;
-        }
-
-        final Pair<GroupData, List<ChildData>> fromGroup = mData.get(fromGroupPosition);
-        final Pair<GroupData, List<ChildData>> toGroup = mData.get(toGroupPosition);
-
-        final ConcreteChildData item = (ConcreteChildData) fromGroup.second.remove(fromChildPosition);
-
-        if (toGroupPosition != fromGroupPosition) {
-            // assign a new ID
-            final long newId = ((ConcreteGroupData) toGroup.first).generateNewChildId();
-            item.setChildId(newId);
-        }
-
-        toGroup.second.add(toChildPosition, item);
     }
 
     public void removeGroupItem(int groupPosition) {
@@ -121,8 +51,8 @@ public class DataProvider {
     }
 
     public void removeChildItem(int groupPosition, int childPosition) {
-        mLastRemovedChild = mData.get(groupPosition).second.remove(childPosition);
-        mLastRemovedChildParentGroupId = mData.get(groupPosition).first.getGroupId();
+        mLastRemovedChild = mData.get(groupPosition).mChildren.remove(childPosition);
+        mLastRemovedChildParentGroupId = mData.get(groupPosition).mGroup.getGroupId();
         mLastRemovedChildPosition = childPosition;
 
         mLastRemovedGroup = null;
@@ -156,12 +86,12 @@ public class DataProvider {
     }
 
     private long undoChildRemoval() {
-        Pair<GroupData, List<ChildData>> group = null;
+        GroupSet group = null;
         int groupPosition = -1;
 
         // find the group
         for (int i = 0; i < mData.size(); i++) {
-            if (mData.get(i).first.getGroupId() == mLastRemovedChildParentGroupId) {
+            if (mData.get(i).mGroup.getGroupId() == mLastRemovedChildParentGroupId) {
                 group = mData.get(i);
                 groupPosition = i;
                 break;
@@ -173,13 +103,13 @@ public class DataProvider {
         }
 
         int insertedPosition;
-        if (mLastRemovedChildPosition >= 0 && mLastRemovedChildPosition < group.second.size()) {
+        if (mLastRemovedChildPosition >= 0 && mLastRemovedChildPosition < group.mChildren.size()) {
             insertedPosition = mLastRemovedChildPosition;
         } else {
-            insertedPosition = group.second.size();
+            insertedPosition = group.mChildren.size();
         }
 
-        group.second.add(insertedPosition, mLastRemovedChild);
+        group.mChildren.add(insertedPosition, mLastRemovedChild);
 
         mLastRemovedChildParentGroupId = -1;
         mLastRemovedChildPosition = -1;
@@ -188,17 +118,82 @@ public class DataProvider {
         return RecyclerViewExpandableItemManager.getPackedPositionForChild(groupPosition, insertedPosition);
     }
 
-    public static final class ConcreteGroupData extends GroupData {
+    public int getGroupCount() {
+        return mData.size();
+    }
 
+    public int getChildCount(int groupPosition) {
+        return mData.get(groupPosition).mChildren.size();
+    }
+
+    public GroupData getGroupItem(int groupPosition) {
+        if (groupPosition < 0 || groupPosition >= getGroupCount()) {
+            throw new IndexOutOfBoundsException("groupPosition = " + groupPosition);
+        }
+
+        return mData.get(groupPosition).mGroup;
+    }
+
+    public ChildData getChildItem(int groupPosition, int childPosition) {
+        if (groupPosition < 0 || groupPosition >= getGroupCount()) {
+            throw new IndexOutOfBoundsException("groupPosition = " + groupPosition);
+        }
+
+        final List<ConcreteChildData> children = mData.get(groupPosition).mChildren;
+
+        if (childPosition < 0 || childPosition >= children.size()) {
+            throw new IndexOutOfBoundsException("childPosition = " + childPosition);
+        }
+
+        return children.get(childPosition);
+    }
+
+    public void addGroupItem(int groupPosition) {
+        long id = mGroupIdGenerator.next();
+        String text = getOneCharString(GROUP_ITEM_CHARS, id);
+        ConcreteGroupData newItem = new ConcreteGroupData(id, text);
+
+        mData.add(groupPosition, new GroupSet(newItem));
+    }
+
+    public void addChildItem(int groupPosition, int childPosition) {
+        mData.get(groupPosition).addNewChildData(childPosition);
+    }
+
+    public void moveGroupItem(int fromGroupPosition, int toGroupPosition) {
+        if (fromGroupPosition == toGroupPosition) {
+            return;
+        }
+        final GroupSet group = mData.remove(fromGroupPosition);
+        mData.add(toGroupPosition, group);
+    }
+
+    public void moveChildItem(int fromGroupPosition, int fromChildPosition, int toGroupPosition, int toChildPosition) {
+        if ((fromGroupPosition == toGroupPosition) && (fromChildPosition == toChildPosition)) {
+            return;
+        }
+
+        final GroupSet fromGroup = mData.get(fromGroupPosition);
+        final GroupSet toGroup = mData.get(toGroupPosition);
+
+        final ConcreteChildData item = fromGroup.mChildren.remove(fromChildPosition);
+
+        if (toGroupPosition != fromGroupPosition) {
+            item.mId = fromGroup.mChildIdGenerator.next();
+        }
+
+        toGroup.mChildren.add(toChildPosition, item);
+
+    }
+
+    public static final class ConcreteGroupData extends GroupData {
         private final long mId;
         private final String mText;
-        private boolean mPinned;
-        private long mNextChildId;
+        private boolean pinned;
 
         ConcreteGroupData(long id, String text) {
             mId = id;
             mText = text;
-            mNextChildId = 0;
         }
 
         @Override
@@ -212,27 +207,20 @@ public class DataProvider {
         }
 
         @Override
-        public void setPinned(boolean pinnedToSwipeLeft) {
-            mPinned = pinnedToSwipeLeft;
+        public void setPinned(boolean pinned) {
+            this.pinned = pinned;
         }
 
         @Override
         public boolean isPinned() {
-            return mPinned;
-        }
-
-        public long generateNewChildId() {
-            final long id = mNextChildId;
-            mNextChildId += 1;
-            return id;
+            return pinned;
         }
     }
 
     public static final class ConcreteChildData extends ChildData {
-
         private long mId;
+        private boolean pinned;
         private final String mText;
-        private boolean mPinned;
 
         ConcreteChildData(long id, String text) {
             mId = id;
@@ -251,23 +239,51 @@ public class DataProvider {
 
         @Override
         public void setPinned(boolean pinned) {
-            mPinned = pinned;
+            this.pinned = pinned;
         }
 
         @Override
         public boolean isPinned() {
-            return mPinned;
+            return pinned;
+        }
+    }
+
+    private static String getOneCharString(String str, long index) {
+        return Character.toString(str.charAt((int) (index % str.length())));
+    }
+
+    private static class IdGenerator {
+        long mId;
+
+        public long next() {
+            final long id = mId;
+            mId += 1;
+            return id;
+        }
+    }
+
+    private static class GroupSet {
+        private ConcreteGroupData mGroup;
+        private List<ConcreteChildData> mChildren;
+        private IdGenerator mChildIdGenerator;
+
+        public GroupSet(ConcreteGroupData group) {
+            mGroup = group;
+            mChildren = new LinkedList<>();
+            mChildIdGenerator = new IdGenerator();
         }
 
-        public void setChildId(long id) {
-            this.mId = id;
+        public void addNewChildData(int position) {
+            long id = mChildIdGenerator.next();
+            String text = getOneCharString(CHILD_ITEM_CHARS, id);
+            ConcreteChildData child = new ConcreteChildData(id, text);
+
+            mChildren.add(position, child);
         }
     }
 
     public static abstract class BaseData {
-
         public abstract String getText();
-
         public abstract void setPinned(boolean pinned);
 
         public abstract boolean isPinned();

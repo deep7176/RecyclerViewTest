@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -32,9 +33,9 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.RecyclerViewAdapterUtils;
  * Created by Deep on 1/12/16.
  * for RecyclerViewTest
  */
-public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH, EDSAdapter.ChildVH>
-    implements ExpandableDraggableItemAdapter<EDSAdapter.GroupVH, EDSAdapter.ChildVH>,
-        ExpandableSwipeableItemAdapter<EDSAdapter.GroupVH, EDSAdapter.ChildVH> {
+public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupItem, EDSAdapter.ChildItem>
+    implements ExpandableDraggableItemAdapter<EDSAdapter.GroupItem, EDSAdapter.ChildItem>,
+        ExpandableSwipeableItemAdapter<EDSAdapter.GroupItem, EDSAdapter.ChildItem> {
 
     private static final String TAG = "EDSAdapter";
 
@@ -51,13 +52,9 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
 
     public interface EventListener {
         void onGroupItemRemoved(int groupPosition);
-
-        void onChildItemRemoved(int groupPosition, int childPosition);
-
         void onGroupItemPinned(int groupPosition);
-
+        void onChildItemRemoved(int groupPosition, int childPosition);
         void onChildItemPinned(int groupPosition, int childPosition);
-
         void onItemViewClicked(View v, boolean pinned);
     }
 
@@ -69,11 +66,13 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         public TextView mTextView;
         private int mExpandStateFlags;
 
-        public BaseViewHolder(View v) {
+        public BaseViewHolder(View v, View.OnClickListener clickListener) {
             super(v);
             mContainer = (FrameLayout) v.findViewById(R.id.container);
             mDragHandle = v.findViewById(R.id.drag_handle);
             mTextView = (TextView) v.findViewById(android.R.id.text1);
+
+            mContainer.setOnClickListener(clickListener);
         }
 
         @Override
@@ -92,17 +91,22 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         }
     }
 
-    public static class GroupVH extends BaseViewHolder {
+    public static class GroupItem extends BaseViewHolder {
         public Indicator mIndicator;
+        public Button mButton;
 
-        public GroupVH(View v) {
-            super(v);
+        public GroupItem(View v, View.OnClickListener clickListener) {
+            super(v, clickListener);
             mIndicator = (Indicator) v.findViewById(R.id.indicator);
+            mButton = (Button) v.findViewById(R.id.button_add_child);
+
+            mButton.setOnClickListener(clickListener);
         }
     }
-    public static class ChildVH extends BaseViewHolder {
-        public ChildVH(View v) {
-            super(v);
+
+    public static class ChildItem extends BaseViewHolder {
+        public ChildItem(View v, View.OnClickListener clickListener) {
+            super(v, clickListener);
         }
     }
 
@@ -129,9 +133,52 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     private void onItemViewClick(View v) {
-        if (mEventListener != null) {
-            mEventListener.onItemViewClicked(v, true);  // true --- pinned
+        RecyclerView.ViewHolder vh = RecyclerViewAdapterUtils.getViewHolder(v);
+        int flatPosition = vh.getAdapterPosition();
+
+        if (flatPosition == RecyclerView.NO_POSITION) {
+            return;
         }
+
+        long expandablePosition = mExpandableItemManager.getExpandablePosition(flatPosition);
+        int groupPosition = RecyclerViewExpandableItemManager.getPackedPositionGroup(expandablePosition);
+        int childPosition = RecyclerViewExpandableItemManager.getPackedPositionChild(expandablePosition);
+
+        switch (v.getId()) {
+            case R.id.button_add_child:
+                addChild(groupPosition);
+                break;
+            case R.id.container:
+                if (childPosition == RecyclerView.NO_POSITION)
+                    onGroupClicked(groupPosition);
+                else
+                    onChildClicked(groupPosition, childPosition);
+                break;
+        }
+    }
+
+    private void onChildClicked(int groupPosition, int childPosition) {
+        DataProvider.ChildData item = mProvider.getChildItem(groupPosition,childPosition);
+
+        if(item.isPinned()){
+            item.setPinned(false);
+        }
+
+        mExpandableItemManager.notifyChildItemChanged(groupPosition,childPosition);
+    }
+
+    private void onGroupClicked(int groupPosition) {
+        // toggle expanded/collapsed
+        DataProvider.GroupData item = mProvider.getGroupItem(groupPosition);
+        item.setPinned(item.isPinned() ? false : false);
+        if (isGroupExpanded(groupPosition))
+            mExpandableItemManager.collapseGroup(groupPosition);
+        else
+            mExpandableItemManager.expandGroup(groupPosition);
+    }
+
+    private boolean isGroupExpanded(int groupPosition) {
+        return mExpandableItemManager.isGroupExpanded(groupPosition);
     }
 
     private void onSwipeableViewContainerClick(View v) {
@@ -171,26 +218,26 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public GroupVH onCreateGroupViewHolder(ViewGroup parent, int viewType) {
+    public GroupItem onCreateGroupViewHolder(ViewGroup parent, int viewType) {
         final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         final View v = inflater.inflate(R.layout.list_group_item_draggable, parent, false);
-        return new GroupVH(v);
+        return new GroupItem(v, mItemViewOnClickListener);
     }
 
     @Override
-    public ChildVH onCreateChildViewHolder(ViewGroup parent, int viewType) {
+    public ChildItem onCreateChildViewHolder(ViewGroup parent, int viewType) {
         final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         final View v = inflater.inflate(R.layout.list_item_draggable, parent, false);
-        return new ChildVH(v);
+        return new ChildItem(v, mItemViewOnClickListener);
     }
 
     @Override
-    public void onBindGroupViewHolder(GroupVH holder, int groupPosition, int viewType) {
+    public void onBindGroupViewHolder(GroupItem holder, int groupPosition, int viewType) {
         // group item
         final DataProvider.GroupData item = mProvider.getGroupItem(groupPosition);
 
         // set listeners
-        holder.itemView.setOnClickListener(mItemViewOnClickListener);
+        //holder.itemView.setOnClickListener(mItemViewOnClickListener);
 
         // set text
         holder.mTextView.setText(item.getText());
@@ -228,7 +275,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public void onBindChildViewHolder(ChildVH holder, int groupPosition, int childPosition, int viewType) {
+    public void onBindChildViewHolder(ChildItem holder, int groupPosition, int childPosition, int viewType) {
         // child item
         final DataProvider.ChildData item = mProvider.getChildItem(groupPosition, childPosition);
 
@@ -266,7 +313,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public boolean onCheckCanExpandOrCollapseGroup(GroupVH holder, int groupPosition, int x, int y, boolean expand) {
+    public boolean onCheckCanExpandOrCollapseGroup(GroupItem holder, int groupPosition, int x, int y, boolean expand) {
         // check the item is *not* pinned
         if (mProvider.getGroupItem(groupPosition).isPinned()) {
             // return false to raise View.OnClickListener#onClick() event
@@ -287,8 +334,27 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         return !ViewUtils.hitTest(dragHandleView, x - offsetX, y - offsetY);
     }
 
+    // NOTE: This method is called from Fragment
+    public void addGroupItem() {
+        int count = 1;
+        int groupPosition = mProvider.getGroupCount();
+
+        for (int i = 0; i < count; i++) {
+            mProvider.addGroupItem(groupPosition + i);
+        }
+
+        mExpandableItemManager.notifyGroupItemRangeInserted(groupPosition, count);
+    }
+
+    private void addChild(int groupPosition) {
+        int childCount = mProvider.getChildCount(groupPosition);
+
+        mProvider.addChildItem(groupPosition, childCount);
+        mExpandableItemManager.notifyChildItemInserted(groupPosition, childCount);
+    }
+
     @Override
-    public boolean onCheckGroupCanStartDrag(GroupVH holder, int groupPosition, int x, int y) {
+    public boolean onCheckGroupCanStartDrag(GroupItem holder, int groupPosition, int x, int y) {
         // x, y --- relative from the itemView's top-left
         final View containerView = holder.mContainer;
         final View dragHandleView = holder.mDragHandle;
@@ -300,7 +366,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public boolean onCheckChildCanStartDrag(ChildVH holder, int groupPosition, int childPosition, int x, int y) {
+    public boolean onCheckChildCanStartDrag(ChildItem holder, int groupPosition, int childPosition, int x, int y) {
         // x, y --- relative from the itemView's top-left
         final View containerView = holder.mContainer;
         final View dragHandleView = holder.mDragHandle;
@@ -312,13 +378,13 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public ItemDraggableRange onGetGroupItemDraggableRange(GroupVH holder, int groupPosition) {
+    public ItemDraggableRange onGetGroupItemDraggableRange(GroupItem holder, int groupPosition) {
         // no drag-sortable range specified
         return null;
     }
 
     @Override
-    public ItemDraggableRange onGetChildItemDraggableRange(ChildVH holder, int groupPosition, int childPosition) {
+    public ItemDraggableRange onGetChildItemDraggableRange(ChildItem holder, int groupPosition, int childPosition) {
         // no drag-sortable range specified
         return null;
     }
@@ -334,7 +400,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public int onGetGroupItemSwipeReactionType(GroupVH holder, int groupPosition, int x, int y) {
+    public int onGetGroupItemSwipeReactionType(GroupItem holder, int groupPosition, int x, int y) {
         if (onCheckGroupCanStartDrag(holder, groupPosition, x, y)) {
             return Swipeable.REACTION_CAN_NOT_SWIPE_BOTH_H;
         }
@@ -343,7 +409,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public int onGetChildItemSwipeReactionType(ChildVH holder, int groupPosition, int childPosition, int x, int y) {
+    public int onGetChildItemSwipeReactionType(ChildItem holder, int groupPosition, int childPosition, int x, int y) {
         if (onCheckChildCanStartDrag(holder, groupPosition, childPosition, x, y)) {
             return Swipeable.REACTION_CAN_NOT_SWIPE_BOTH_H;
         }
@@ -352,7 +418,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public void onSetGroupItemSwipeBackground(GroupVH holder, int groupPosition, int type) {
+    public void onSetGroupItemSwipeBackground(GroupItem holder, int groupPosition, int type) {
         int bgResId = 0;
         switch (type) {
             case Swipeable.DRAWABLE_SWIPE_NEUTRAL_BACKGROUND:
@@ -370,7 +436,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public void onSetChildItemSwipeBackground(ChildVH holder, int groupPosition, int childPosition, int type) {
+    public void onSetChildItemSwipeBackground(ChildItem holder, int groupPosition, int childPosition, int type) {
         int bgResId = 0;
         switch (type) {
             case Swipeable.DRAWABLE_SWIPE_NEUTRAL_BACKGROUND:
@@ -388,7 +454,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public SwipeResultAction onSwipeGroupItem(GroupVH holder, int groupPosition, int result) {
+    public SwipeResultAction onSwipeGroupItem(GroupItem holder, int groupPosition, int result) {
         switch (result) {
             // swipe right
             case Swipeable.RESULT_SWIPED_RIGHT:
@@ -414,7 +480,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     @Override
-    public SwipeResultAction onSwipeChildItem(ChildVH holder, int groupPosition, int childPosition, int result) {
+    public SwipeResultAction onSwipeChildItem(ChildItem holder, int groupPosition, int childPosition, int result) {
         switch (result) {
             // swipe right
             case Swipeable.RESULT_SWIPED_RIGHT:

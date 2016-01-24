@@ -1,6 +1,5 @@
 package com.example.app.recyclerviewtest.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -117,22 +116,16 @@ public class MainActivity extends AppCompatActivity implements DialogFragment.Ev
         final Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_VIEW);
         DataProvider.GroupData data = getDataProvider().getGroupItem(groupPosition);
 
-        if (data.isPinned()) {
-            // unpin if tapped the pinned item
-            data.setPinned(false);
-            ((MainActivityFragment) fragment).notifyGroupItemChanged(groupPosition);
-        }
+        ((MainActivityFragment) fragment).notifyGroupItemChanged(groupPosition);
+
     }
 
     public void onChildItemClicked(int groupPosition, int childPosition) {
         final Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_VIEW);
         DataProvider.ChildData data = getDataProvider().getChildItem(groupPosition, childPosition);
 
-        if (data.isPinned()) {
-            // unpin if tapped the pinned item
-            data.setPinned(false);
-            ((MainActivityFragment) fragment).notifyChildItemChanged(groupPosition, childPosition);
-        }
+        ((MainActivityFragment) fragment).notifyChildItemChanged(groupPosition, childPosition);
+
     }
 
     private void onItemUndoActionClicked() {
@@ -165,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragment.Ev
     public boolean onOptionsItemSelected(MenuItem item) {
         switch( item.getItemId()){
             case R.id.action_add_remove:
-                startActivity(new Intent(MainActivity.this, AddActivity.class));
+                //startActivity(new Intent(MainActivity.this, AddActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -180,11 +173,11 @@ public class MainActivity extends AppCompatActivity implements DialogFragment.Ev
 
         if (childPosition == RecyclerView.NO_POSITION) {
             // group item
-            getDataProvider().getGroupItem(groupPosition).setPinned(ok);
+            //getDataProvider().getGroupItem(groupPosition).setPinned(ok);
             ((MainActivityFragment) fragment).notifyGroupItemChanged(groupPosition);
         } else {
             // child item
-            getDataProvider().getChildItem(groupPosition, childPosition).setPinned(ok);
+            //getDataProvider().getChildItem(groupPosition, childPosition).setPinned(ok);
             ((MainActivityFragment) fragment).notifyChildItemChanged(groupPosition, childPosition);
         }
     }
