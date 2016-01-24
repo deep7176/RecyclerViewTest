@@ -4,9 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/list_group_item_height"
-    android:layout_marginTop="8dp"
-    android:background="#ffffff">
+    android:layout_height="@dimen/list_item_height"
+    android:background="#FFFFFF">
 
     <FrameLayout
         android:id="@+id/container"
@@ -20,24 +19,17 @@
             android:layout_width="32dp"
             android:layout_height="match_parent"
             android:layout_gravity="top|left"
-            android:background="#20000000"
-            tools:ignore="RtlHardcoded"/>
+            android:background="#20000000"/>
 
         <TextView
             android:id="@android:id/text1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="top|left"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="40dp"
-            android:gravity="center"/>
-
-        <com.example.app.recyclerviewtest.ui.view.Indicator
-            android:id="@+id/indicator"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="right|center_vertical"
-            android:layout_marginRight="16dp"/>
+            android:layout_marginLeft="32dp"
+            android:layout_marginRight="32dp"
+            android:gravity="center"
+            tools:ignore="RtlHardcoded"/>
 
     </FrameLayout>
 

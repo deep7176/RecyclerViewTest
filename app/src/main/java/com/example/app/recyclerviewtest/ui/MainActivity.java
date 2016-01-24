@@ -1,5 +1,6 @@
-package com.example.app.recyclerviewtest;
+package com.example.app.recyclerviewtest.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -7,17 +8,15 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.app.recyclerviewtest.R;
+import com.example.app.recyclerviewtest.provider.DataProvider;
 import com.h6ah4i.android.widget.advrecyclerview.expandable.RecyclerViewExpandableItemManager;
 
-import java.io.LineNumberInputStream;
-
-public class MainActivity extends AppCompatActivity implements
-        View.OnClickListener, DialogFragment.EventListener {
+public class MainActivity extends AppCompatActivity implements DialogFragment.EventListener {
     private static final String TAG = "MainActivity";
 
     private static final String FRAGMENT_TAG_ITEM_PINNED_DIALOG = "Pinned Dialog";
@@ -35,15 +34,16 @@ public class MainActivity extends AppCompatActivity implements
 
         mProvider = new DataProvider();
         mFAB = (FloatingActionButton) findViewById(R.id.fab);
-        mFAB.setOnClickListener(this);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new MainActivityFragment(), FRAGMENT_LIST_VIEW)
                     .commit();
         }
+    }
 
-
+    public FloatingActionButton getFab(){
+        return mFAB;
     }
 
     /**
@@ -156,19 +156,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onClick(View view) {
-        switch(view.getId()) {
-            case R.id.fab:
-                addItem();
-                break;
-        }
-    }
-
-    private void addItem() {
-
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
@@ -177,7 +164,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch( item.getItemId()){
-            case R.id.action_settings:
+            case R.id.action_add_remove:
+                startActivity(new Intent(MainActivity.this, AddActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

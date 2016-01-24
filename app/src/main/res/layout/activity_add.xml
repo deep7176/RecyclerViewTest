@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".ui.MainActivity">
+    tools:context=".ui.AddActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -22,13 +22,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <RelativeLayout
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout="@layout/fragment_recycler_list_view"
-        />
+    <include layout="@layout/content_add" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

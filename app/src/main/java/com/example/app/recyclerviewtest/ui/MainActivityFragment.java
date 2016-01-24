@@ -1,4 +1,4 @@
-package com.example.app.recyclerviewtest;
+package com.example.app.recyclerviewtest.ui;
 
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
@@ -13,6 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.app.recyclerviewtest.adapter.EDSAdapter;
+import com.example.app.recyclerviewtest.R;
+import com.example.app.recyclerviewtest.provider.DataProvider;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.decoration.ItemShadowDecorator;
@@ -29,7 +32,7 @@ import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils;
 public class MainActivityFragment extends Fragment implements
         RecyclerViewExpandableItemManager.OnGroupCollapseListener,
         RecyclerViewExpandableItemManager.OnGroupExpandListener,
-        EDSAdapter.EventListener{
+        EDSAdapter.EventListener {
     private static final String SAVED_STATE_EXPANDABLE_ITEM_MANAGER = "RecyclerViewExpandableItemManager";
 
     private RecyclerView mRecyclerView;
@@ -47,7 +50,7 @@ public class MainActivityFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        return inflater.inflate(R.layout.fragment_recycler_list_view, container, false);
     }
 
     @Override

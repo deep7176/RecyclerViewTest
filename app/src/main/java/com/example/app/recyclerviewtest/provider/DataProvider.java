@@ -1,4 +1,4 @@
-package com.example.app.recyclerviewtest;
+package com.example.app.recyclerviewtest.provider;
 
 import android.support.v4.util.Pair;
 import android.util.Log;
@@ -188,23 +188,6 @@ public class DataProvider {
         return RecyclerViewExpandableItemManager.getPackedPositionForChild(groupPosition, insertedPosition);
     }
 
-    public static abstract class BaseData {
-
-        public abstract String getText();
-
-        public abstract void setPinned(boolean pinned);
-
-        public abstract boolean isPinned();
-    }
-
-    public static abstract class GroupData extends BaseData {
-        public abstract long getGroupId();
-    }
-
-    public static abstract class ChildData extends BaseData {
-        public abstract long getChildId();
-    }
-
     public static final class ConcreteGroupData extends GroupData {
 
         private final long mId;
@@ -279,5 +262,22 @@ public class DataProvider {
         public void setChildId(long id) {
             this.mId = id;
         }
+    }
+
+    public static abstract class BaseData {
+
+        public abstract String getText();
+
+        public abstract void setPinned(boolean pinned);
+
+        public abstract boolean isPinned();
+    }
+
+    public static abstract class GroupData extends BaseData {
+        public abstract long getGroupId();
+    }
+
+    public static abstract class ChildData extends BaseData {
+        public abstract long getChildId();
     }
 }

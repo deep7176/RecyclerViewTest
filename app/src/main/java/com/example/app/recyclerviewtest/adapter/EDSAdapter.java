@@ -1,17 +1,17 @@
-package com.example.app.recyclerviewtest;
+package com.example.app.recyclerviewtest.adapter;
 
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.example.app.recyclerviewtest.util.DrawableUtils;
+import com.example.app.recyclerviewtest.R;
+import com.example.app.recyclerviewtest.provider.DataProvider;
 import com.example.app.recyclerviewtest.util.ViewUtils;
-import com.example.app.recyclerviewtest.view.ExpandableItemIndicator;
+import com.example.app.recyclerviewtest.ui.view.Indicator;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
 import com.h6ah4i.android.widget.advrecyclerview.expandable.ExpandableDraggableItemAdapter;
@@ -93,11 +93,11 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
     }
 
     public static class GroupVH extends BaseViewHolder {
-        public ExpandableItemIndicator mIndicator;
+        public Indicator mIndicator;
 
         public GroupVH(View v) {
             super(v);
-            mIndicator = (ExpandableItemIndicator) v.findViewById(R.id.indicator);
+            mIndicator = (Indicator) v.findViewById(R.id.indicator);
         }
     }
     public static class ChildVH extends BaseViewHolder {
@@ -203,15 +203,15 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
         if (((dragState & Draggable.STATE_FLAG_IS_UPDATED) != 0) ||
                 ((expandState & Expandable.STATE_FLAG_IS_UPDATED) != 0) ||
                 ((swipeState & Swipeable.STATE_FLAG_IS_UPDATED) != 0)) {
-            int bgResId;
+            int bgResId = 0;
             boolean isExpanded;
             boolean animateIndicator = ((expandState & Expandable.STATE_FLAG_HAS_EXPANDED_STATE_CHANGED) != 0);
 
             if ((dragState & Draggable.STATE_FLAG_IS_ACTIVE) != 0) {
-                bgResId = R.drawable.bg_group_item_dragging_active_state;
+                //bgResId = R.drawable.bg_group_item_dragging_active_state;
 
                 // need to clear drawable state here to get correct appearance of the dragging item.
-                DrawableUtils.clearState(holder.mContainer.getForeground());
+                ViewUtils.clearState(holder.mContainer.getForeground());
             } else {
                 bgResId = R.drawable.bg_group_item_normal_state;
             }
@@ -252,7 +252,7 @@ public class EDSAdapter extends AbstractExpandableItemAdapter<EDSAdapter.GroupVH
                 bgResId = R.drawable.bg_item_dragging_active_state;
 
                 // need to clear drawable state here to get correct appearance of the dragging item.
-                DrawableUtils.clearState(holder.mContainer.getForeground());
+                ViewUtils.clearState(holder.mContainer.getForeground());
             } else {
                 bgResId = R.drawable.bg_item_normal_state;
             }
